@@ -1,0 +1,19 @@
+# 依赖
+node_modules/
+
+# 真 GPU 验收用的浏览器(641M,自己装)
+.browsers/
+
+# 每轮验收截图
+tools/shots/
+
+# Python
+__pycache__/
+*.pyc
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 符号链接(641M 的真 GPU 浏览器,带斜杠的规则拦不住软链)
+.browsers

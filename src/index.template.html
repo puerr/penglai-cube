@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03050b">
+<title>蓬莱 · 仙境 —— 悬浮在深空里的海上仙山</title>
+<style>
+  :root{
+    --ink: rgba(228, 238, 252, 0.82);
+    --ink-dim: rgba(200, 216, 238, 0.42);
+    --line: rgba(180, 210, 245, 0.22);
+  }
+  *{ box-sizing: border-box; }
+  html, body{
+    margin: 0; padding: 0; height: 100%;
+    background: #03050b;
+    overflow: hidden;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #scene{
+    display: block;
+    width: 100vw; height: 100vh;
+    touch-action: none;
+    cursor: grab;
+  }
+  #scene:active{ cursor: grabbing; }
+
+  #hud{
+    position: fixed; inset: 0;
+    pointer-events: none;
+    transition: opacity .7s ease;
+    font-family: "Helvetica Neue", "PingFang SC", system-ui, sans-serif;
+  }
+  #hud > *{ position: absolute; }
+
+  .hud-title{ top: clamp(20px, 4vh, 46px); left: clamp(20px, 4vw, 56px); }
+  .hud-title h1{
+    margin: 0;
+    font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "STSong", serif;
+    font-size: clamp(19px, 2.1vw, 27px);
+    font-weight: 400;
+    letter-spacing: .34em;
+    text-indent: .34em;
+    color: rgba(238, 245, 255, .93);
+    text-shadow: 0 0 24px rgba(120, 180, 255, .35);
+  }
+  .hud-title .rule{
+    width: 46px; height: 1px; margin: 12px 0 9px;
+    background: linear-gradient(90deg, rgba(190, 220, 255, .55), rgba(190, 220, 255, 0));
+  }
+  .hud-title p{
+    margin: 0;
+    font-size: 9.5px;
+    letter-spacing: .30em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  .hud-phase{
+    left: clamp(20px, 4vw, 56px);
+    bottom: clamp(20px, 4.4vh, 48px);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hud-phase #hud-phase{
+    font-family: "Songti SC", "Noto Serif CJK SC", serif;
+    font-size: 13px; letter-spacing: .26em; text-indent: .26em;
+    color: rgba(232, 242, 255, .8);
+  }
+  .hud-phase #hud-clock{
+    font-size: 10px; letter-spacing: .16em;
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .hud-bar{
+    position: relative;
+    width: clamp(90px, 12vw, 156px); height: 1px;
+    background: rgba(180, 210, 245, .16);
+    overflow: hidden;
+  }
+  .hud-bar i{
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(150, 200, 255, .15), rgba(198, 228, 255, .95));
+    transform-origin: 0 50%;
+    transform: scaleX(.3);
+  }
+
+  .hud-hint{
+    right: clamp(20px, 4vw, 56px);
+    bottom: clamp(22px, 4.4vh, 50px);
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: rgba(190, 208, 232, .34);
+    text-align: right;
+    line-height: 1.9;
+  }
+
+  #hud-pov{
+    left: 50%; top: clamp(18px, 3.2vh, 34px); transform: translateX(-50%);
+    font-size: 10.5px; letter-spacing: .18em;
+    color: rgba(190, 220, 235, .72);
+    opacity: 0; transition: opacity .45s ease;
+    text-align: center; white-space: nowrap;
+  }
+
+  #pov-panel{
+    left: 50%; bottom: clamp(18px, 3.4vh, 40px); transform: translateX(-50%);
+    display: none; gap: 6px; flex-direction: column;
+    padding: 12px 16px; border-radius: 10px;
+    background: rgba(8, 16, 20, .55);
+    border: 1px solid rgba(150, 200, 220, .16);
+    backdrop-filter: blur(6px);
+    pointer-events: auto;
+    font-size: 10.5px; letter-spacing: .08em;
+    color: rgba(206, 228, 238, .82);
+  }
+  #pov-panel.on{ display: flex; }
+  .pp-row{ display: flex; align-items: center; gap: 8px; }
+  .pp-row label{ width: 46px; color: rgba(180, 210, 225, .60); }
+  .pp-row input[type=range]{ width: 178px; accent-color: #5f9e8a; }
+  .pp-row b{ width: 44px; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pp-hint{ margin-top: 2px; color: rgba(160, 195, 210, .45); font-size: 9.5px; letter-spacing: .06em; }
+
+  #hud-stats{
+    right: clamp(20px, 4vw, 56px);
+    top: clamp(22px, 4vh, 48px);
+    font-size: 10px; letter-spacing: .12em;
+    color: rgba(160, 200, 240, .38);
+    font-variant-numeric: tabular-nums;
+  }
+
+  #veil{
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse at 50% 46%, rgba(22, 34, 62, .85) 0%, rgba(3, 5, 11, .97) 55%, #02040a 100%);
+    transition: opacity 1.1s ease, visibility 1.1s ease;
+    z-index: 10;
+  }
+  #veil.gone{ opacity: 0; visibility: hidden; }
+  .veil-inner{ text-align: center; }
+  .veil-title{
+    font-family: "Songti SC", "Noto Serif CJK SC", "STSong", serif;
+    font-size: 20px; letter-spacing: .5em; text-indent: .5em;
+    color: rgba(226, 238, 255, .88);
+    animation: veilPulse 2.6s ease-in-out infinite;
+  }
+  .veil-sub{
+    margin-top: 16px;
+    font-family: "Helvetica Neue", "PingFang SC", system-ui, sans-serif;
+    font-size: 10px; letter-spacing: .30em;
+    color: rgba(150, 180, 220, .42);
+  }
+  @keyframes veilPulse{
+    0%, 100%{ opacity: .55; }
+    50%{ opacity: 1; }
+  }
+
+  @media (max-width: 640px){
+    .hud-hint{ display: none; }
+    .hud-title h1{ letter-spacing: .22em; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="hud">
+    <header class="hud-title">
+      <h1>蓬莱 · 仙境</h1>
+      <div class="rule"></div>
+      <p>Penglai · Isle of the Immortals</p>
+    </header>
+
+    <div class="hud-phase">
+      <span id="hud-phase">上午</span>
+      <span id="hud-clock">08:00</span>
+      <span class="hud-bar"><i id="hud-bar-fill"></i></span>
+    </div>
+
+    <div class="hud-hint">
+      拖动旋转 · 滚轮推近<br>
+      空格暂停 · 1–5 换时刻<br>V 仙人视角 · G 玻璃罩 · R 复位 · H 收起
+    </div>
+
+    <div id="hud-stats"></div>
+
+    <div id="hud-pov"></div>
+
+    <div id="pov-panel">
+      <div class="pp-row"><label>眼高</label><input id="pp-eye" type="range" min="0.02" max="0.60" step="0.005" value="0.176"><b id="pp-eye-v">0.176</b></div>
+      <div class="pp-row"><label>位置 X</label><input id="pp-dx" type="range" min="-0.60" max="0.60" step="0.01" value="0"><b id="pp-dx-v">0.00</b></div>
+      <div class="pp-row"><label>位置 Z</label><input id="pp-dz" type="range" min="-0.60" max="0.60" step="0.01" value="0"><b id="pp-dz-v">0.00</b></div>
+      <div class="pp-hint">方向键微调 · Shift 加速 · [ ] 眼高 · C 输出参数 · V 换人</div>
+    </div>
+  </div>
+
+  <div id="veil">
+    <div class="veil-inner">
+      <div class="veil-title">蓬莱 · 仙境</div>
+      <div class="veil-sub">正在浮现海上仙山…</div>
+    </div>
+  </div>
+
+<!--WORLD_JS-->
+</body>
+</html>

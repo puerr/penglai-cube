@@ -1,0 +1,17 @@
+{
+  "name": "penglai-cube",
+  "version": "0.1.0",
+  "description": "蓬莱 · 仙境 —— 悬浮在深空玻璃立方体里的程序化微缩仙山(单文件,零依赖运行时)",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:dev": "node build.mjs --dev",
+    "serve": "python3 -m http.server 8189"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "author": "puerr (https://github.com/puerr)"
+}
