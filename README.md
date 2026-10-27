@@ -5,6 +5,8 @@
 
 ![蓬莱 · 仙境](docs/preview-dawn.webp)
 
+**[▶ 在线预览](https://puerr.github.io/penglai-cube/)**
+
 ## 打开
 
 双击 `index.html` 即可(资源全内联,`file://` 也能跑,不联网)。或者:
